@@ -1,1 +1,1397 @@
- github.com/franciscor6969/musikschule
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Musikschule">
+<title>Musikschule – Schüler-Protokoll</title>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── THEMES ── */
+:root{
+  --cream:#F0F4F8;--paper:#E8EEF4;--ink:#0D1B2A;--ink2:#1B3050;--ink3:#4A6580;
+  --accent:#2563A8;--accent2:#5B9BD5;--accent-light:#D6E8F7;
+  --green:#2E7D6B;--green-light:#C8EAE3;--border:#B8CCE0;
+  --shadow:rgba(13,27,42,0.10);--radius:14px;--sidebar-w:300px;--header-h:68px;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);
+  --fs-base:16px;--fs-sm:14px;--fs-xs:12px;--fs-label:12px;
+}
+[data-theme="slate"]{
+  --cream:#F2F3F5;--paper:#E6E8EC;--ink:#1A1A2E;--ink2:#2D2D44;--ink3:#5A5A7A;
+  --accent:#4A4A8A;--accent2:#8080B8;--accent-light:#DCDCF0;--border:#C0C0D8;
+}
+[data-theme="teal"]{
+  --cream:#F0F6F6;--paper:#E2EEEE;--ink:#0D2626;--ink2:#1A3D3D;--ink3:#3D6666;
+  --accent:#1A7A6E;--accent2:#4AA89C;--accent-light:#C8E8E5;--border:#A8D0CC;
+}
+[data-theme="night"]{
+  --cream:#1A2030;--paper:#222A3A;--ink:#E8EEF8;--ink2:#C0CDE0;--ink3:#8090A8;
+  --accent:#5B9BD5;--accent2:#89BBE8;--accent-light:#1E3050;--border:#2E4060;
+  --shadow:rgba(0,0,0,0.25);
+}
+[data-theme="warm"]{
+  --cream:#FAF7F2;--paper:#F3EFE8;--ink:#1A1410;--ink2:#3D3530;--ink3:#6B5E58;
+  --accent:#C4622D;--accent2:#E8A87C;--accent-light:#FAE8DC;--border:#DDD5C8;
+}
+
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--cream);color:var(--ink);-webkit-text-size-adjust:100%;overflow:hidden;font-size:var(--fs-base)}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100dvh;padding-top:var(--safe-top)}
+.layout{display:flex;flex:1;overflow:hidden}
+
+/* ── HEADER ── */
+.header{
+  background:var(--ink);color:var(--cream);padding:0 24px;height:var(--header-h);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  border-bottom:3px solid var(--accent);
+  padding-left:calc(20px + var(--safe-left));padding-right:calc(20px + var(--safe-right));z-index:100;
+}
+.header-brand{display:flex;align-items:center;gap:12px}
+.header-icon{width:44px;height:44px;background:var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.header-icon svg{width:22px;height:22px;stroke:white}
+.header-title{font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;letter-spacing:0.3px}
+.header-sub{font-size:10px;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-top:1px}
+
+.header-controls{display:flex;align-items:center;gap:10px}
+.lang-toggle{display:flex;gap:3px;background:rgba(255,255,255,0.1);border-radius:20px;padding:3px}
+.lang-btn{background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;font-weight:700;letter-spacing:1px;padding:5px 12px;border-radius:16px;cursor:pointer;transition:all 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;-webkit-tap-highlight-color:transparent}
+.lang-btn.active{background:var(--accent);color:white}
+
+/* Theme picker */
+.theme-btn{background:rgba(255,255,255,0.1);border:none;border-radius:10px;padding:7px 10px;cursor:pointer;color:rgba(255,255,255,0.7);font-size:11px;font-weight:600;letter-spacing:0.5px;display:flex;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent;transition:background 0.2s;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif}
+.theme-btn:hover{background:rgba(255,255,255,0.2)}
+.theme-panel{position:absolute;top:calc(var(--header-h) + 4px);right:20px;background:var(--ink2);border-radius:12px;padding:10px;display:flex;gap:8px;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,0.3);animation:fadeIn 0.15s ease}
+.theme-swatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.theme-swatch:hover,.theme-swatch.active{border-color:white;transform:scale(1.1)}
+.theme-swatch[data-t="blue"]{background:linear-gradient(135deg,#2563A8,#5B9BD5)}
+.theme-swatch[data-t="slate"]{background:linear-gradient(135deg,#4A4A8A,#8080B8)}
+.theme-swatch[data-t="teal"]{background:linear-gradient(135deg,#1A7A6E,#4AA89C)}
+.theme-swatch[data-t="night"]{background:linear-gradient(135deg,#1A2030,#5B9BD5)}
+.theme-swatch[data-t="warm"]{background:linear-gradient(135deg,#C4622D,#E8A87C)}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--paper);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;padding-left:var(--safe-left)}
+.sidebar-head{padding:18px 14px 12px;border-bottom:1px solid var(--border)}
+.sidebar-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:10px;font-weight:700}
+.search-wrap{position:relative}
+.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none}
+.search-ico svg{width:15px;height:15px;stroke:var(--ink3)}
+.search-input{width:100%;padding:10px 10px 10px 34px;background:var(--cream);border:1px solid var(--border);border-radius:10px;font-size:var(--fs-sm);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;outline:none;-webkit-appearance:none;transition:border-color 0.2s}
+.search-input:focus{border-color:var(--accent)}
+
+.student-list{flex:1;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}
+.alpha-group{margin-bottom:4px}
+.alpha-header{font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:700;color:var(--accent);padding:7px 12px 3px;letter-spacing:1px;border-bottom:1px solid var(--accent-light);margin-bottom:2px}
+.student-item{padding:11px 12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:11px;transition:background 0.15s;margin-bottom:2px;-webkit-tap-highlight-color:transparent}
+.student-item:hover,.student-item:active{background:var(--accent-light)}
+.student-item.active{background:var(--accent);color:white}
+.student-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;font-family:Georgia,'Times New Roman',serif;transition:all 0.15s}
+.student-item.active .student-avatar{background:rgba(255,255,255,0.2);color:white}
+.student-name{font-size:var(--fs-sm);font-weight:500;line-height:1.3}
+.student-meta{font-size:11px;opacity:0.6;margin-top:1px}
+
+.add-btn{margin:10px 12px calc(10px + var(--safe-bottom));padding:13px;background:var(--accent);color:white;border:none;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:background 0.2s;-webkit-tap-highlight-color:transparent}
+.add-btn:hover,.add-btn:active{filter:brightness(1.15)}
+.add-btn svg{width:18px;height:18px;stroke:white}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;background:var(--cream);-webkit-overflow-scrolling:touch;padding-right:var(--safe-right)}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;gap:18px;color:var(--ink3);text-align:center;padding:40px}
+.empty-icon{width:90px;height:90px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.empty-icon svg{width:40px;height:40px;stroke:var(--accent)}
+.empty-title{font-family:Georgia,'Times New Roman',serif;font-size:30px;color:var(--ink)}
+.empty-sub{font-size:var(--fs-sm);max-width:300px;line-height:1.6}
+.empty-btn{padding:13px 28px;background:var(--accent);color:white;border:none;border-radius:12px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;-webkit-tap-highlight-color:transparent}
+
+/* ── DETAIL ── */
+.detail{padding:26px 30px;max-width:960px}
+.detail-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px}
+.detail-avatar-name{display:flex;align-items:center;gap:16px}
+.detail-avatar{width:58px;height:58px;border-radius:16px;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;flex-shrink:0}
+.detail-name{font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:700;color:var(--ink);line-height:1.1}
+.detail-since{font-size:var(--fs-xs);color:var(--ink3);margin-top:3px;letter-spacing:0.5px}
+.detail-actions{display:flex;gap:8px;flex-shrink:0;padding-top:4px}
+
+.btn-icon{padding:9px 15px;border-radius:9px;border:1px solid var(--border);background:var(--paper);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.btn-icon svg{width:15px;height:15px;stroke:currentColor}
+.btn-icon:hover{border-color:var(--accent);color:var(--accent)}
+.btn-icon.danger:hover{border-color:#c0392b;color:#c0392b}
+.btn-save{padding:11px 24px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:filter 0.2s;-webkit-tap-highlight-color:transparent}
+.btn-save:hover{filter:brightness(1.15)}
+.btn-cancel{padding:11px 18px;background:none;color:var(--ink3);border:1px solid var(--border);border-radius:10px;font-size:var(--fs-sm);cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.btn-cancel:hover{border-color:var(--ink3);color:var(--ink)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;margin-bottom:22px;border-bottom:2px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab-btn{padding:11px 18px;background:none;border:none;font-size:var(--fs-sm);font-weight:500;color:var(--ink3);cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;white-space:nowrap;display:flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent}
+.tab-btn svg{width:15px;height:15px;stroke:currentColor}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+
+/* ── CARDS ── */
+.card{background:var(--paper);border-radius:var(--radius);border:1px solid var(--border);padding:20px 22px;margin-bottom:16px;box-shadow:0 1px 4px var(--shadow)}
+.card-title{font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:9px}
+.card-title::before{content:'';display:block;width:3px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:var(--fs-label);font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3)}
+.form-input,.form-textarea{padding:11px 13px;border:1px solid var(--border);border-radius:10px;font-size:var(--fs-base);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--cream);outline:none;transition:border-color 0.2s,background 0.2s;-webkit-appearance:none}
+.form-input:focus,.form-textarea:focus{border-color:var(--accent);background:white}
+.form-input[readonly],.form-textarea[readonly]{cursor:default}
+.form-textarea{resize:vertical;min-height:80px;line-height:1.6}
+
+/* List inputs */
+.list-inputs{display:flex;flex-direction:column;gap:7px}
+.list-row{display:flex;align-items:center;gap:7px}
+.list-num{width:22px;height:22px;border-radius:50%;background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.list-input{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:var(--fs-base);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--cream);color:var(--ink);outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+.list-input:focus{border-color:var(--accent);background:white}
+.list-input[readonly]{cursor:default}
+.list-del{background:none;border:none;color:var(--border);cursor:pointer;padding:4px;border-radius:6px;transition:color 0.15s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center}
+.list-del:hover{color:#c0392b}
+.list-del svg{width:14px;height:14px;stroke:currentColor}
+.list-add{width:100%;background:none;border:1px dashed var(--border);border-radius:9px;padding:8px;font-size:var(--fs-sm);color:var(--ink3);cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:all 0.15s;margin-top:3px;-webkit-tap-highlight-color:transparent}
+.list-add:hover{border-color:var(--accent);color:var(--accent)}
+.goals-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ── LESSONS ── */
+.lesson-top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.lesson-count-label{font-size:11px;color:var(--ink3);font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.lesson-add-btn{display:flex;align-items:center;gap:7px;padding:10px 18px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:filter 0.2s;-webkit-tap-highlight-color:transparent}
+.lesson-add-btn svg{width:15px;height:15px;stroke:white}
+.lesson-add-btn:hover{filter:brightness(1.15)}
+.new-lesson-card{background:var(--paper);border:2px dashed var(--accent2);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;animation:fadeIn 0.15s ease}
+.new-lesson-title{font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.new-lesson-title::before{content:'';display:block;width:3px;height:18px;background:var(--accent2);border-radius:2px}
+
+.lesson-diary{position:relative}
+.lesson-diary::before{content:'';position:absolute;left:28px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent) 0%,var(--accent2) 60%,transparent 100%);opacity:0.2;pointer-events:none;border-radius:2px}
+.diary-entry{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:9px;overflow:hidden;transition:box-shadow 0.15s,border-color 0.2s}
+.diary-entry:hover{box-shadow:0 3px 12px var(--shadow)}
+.diary-entry.open{border-color:var(--accent2);box-shadow:0 4px 18px var(--shadow)}
+.diary-row{display:flex;align-items:center;gap:11px;padding:13px 16px;cursor:pointer;background:var(--paper);transition:background 0.12s;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.diary-entry.open .diary-row,.diary-row:hover{background:var(--accent-light)}
+.diary-index{width:26px;height:26px;border-radius:50%;background:var(--accent);color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif}
+.diary-dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);flex-shrink:0}
+.diary-date{font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:var(--ink);min-width:100px;flex-shrink:0}
+.diary-preview{flex:1;font-size:var(--fs-sm);color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.diary-chevron{font-size:10px;color:var(--ink3);flex-shrink:0}
+.diary-body{padding:16px 20px 18px;border-top:1px solid var(--border);animation:fadeIn 0.15s ease}
+.lesson-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.lesson-field-block{display:flex;flex-direction:column;gap:7px}
+.lesson-field-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--accent);padding-bottom:5px;border-bottom:2px solid var(--accent-light)}
+.lesson-text{font-size:var(--fs-base);color:var(--ink2);line-height:1.75;white-space:pre-wrap;min-height:40px}
+.lesson-textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:var(--fs-base);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--cream);color:var(--ink);outline:none;resize:vertical;line-height:1.65;transition:border-color 0.2s;min-height:90px;-webkit-appearance:none}
+.lesson-textarea:focus{border-color:var(--accent);background:white}
+.diary-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.no-lessons{text-align:center;padding:44px 24px;color:var(--ink3)}
+.no-lessons-icon{font-size:38px;margin-bottom:10px}
+.no-lessons-title{font-family:Georgia,'Times New Roman',serif;font-size:20px;color:var(--ink);margin-bottom:5px}
+.no-lessons-hint{font-size:var(--fs-sm);line-height:1.6}
+
+/* ── CALENDAR ── */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.cal-month-nav{display:flex;align-items:center;gap:12px}
+.cal-month-title{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:var(--ink);min-width:200px;text-align:center}
+.cal-nav-btn{background:var(--paper);border:1px solid var(--border);border-radius:9px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink2);transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.cal-nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+.cal-nav-btn svg{width:16px;height:16px;stroke:currentColor}
+.cal-add-btn{display:flex;align-items:center;gap:7px;padding:10px 18px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:filter 0.2s;-webkit-tap-highlight-color:transparent}
+.cal-add-btn svg{width:15px;height:15px;stroke:white}
+.cal-add-btn:hover{filter:brightness(1.15)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:22px}
+.cal-dow{text-align:center;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);padding:6px 0}
+.cal-day{min-height:56px;border-radius:10px;padding:6px;background:var(--paper);border:1px solid var(--border);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;position:relative}
+.cal-day:hover{border-color:var(--accent);background:var(--accent-light)}
+.cal-day.today{border-color:var(--accent);background:var(--accent-light)}
+.cal-day.today .cal-day-num{background:var(--accent);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.cal-day.other-month{opacity:0.35}
+.cal-day.has-event{border-color:var(--accent2)}
+.cal-day-num{font-size:13px;font-weight:600;color:var(--ink2);line-height:1;margin-bottom:3px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.cal-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;margin:1px}
+.cal-event-list{margin-top:4px}
+.cal-event-chip{background:var(--accent);color:white;border-radius:5px;padding:2px 5px;font-size:10px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;display:block;-webkit-tap-highlight-color:transparent}
+.cal-event-chip.type-1{background:var(--green)}
+.cal-event-chip.type-2{background:#7B5EA7}
+.cal-event-chip.type-3{background:#C0812A}
+.cal-event-chip.type-4{background:#c0392b}
+
+/* Event list below calendar */
+.upcoming-title{font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.upcoming-title::before{content:'';display:block;width:3px;height:18px;background:var(--accent);border-radius:2px;flex-shrink:0}
+.event-card{background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;display:flex;gap:16px;align-items:flex-start;transition:box-shadow 0.15s}
+.event-card:hover{box-shadow:0 3px 12px var(--shadow)}
+.event-date-badge{flex-shrink:0;width:52px;text-align:center;background:var(--accent);color:white;border-radius:10px;padding:8px 4px}
+.event-date-badge .edb-day{font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;line-height:1}
+.event-date-badge .edb-mon{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:0.85}
+.event-info{flex:1}
+.event-title{font-size:var(--fs-base);font-weight:600;color:var(--ink);margin-bottom:3px}
+.event-meta{font-size:var(--fs-sm);color:var(--ink3);display:flex;flex-wrap:wrap;gap:10px}
+.event-meta span{display:flex;align-items:center;gap:4px}
+.event-meta svg{width:13px;height:13px;stroke:var(--ink3)}
+.event-actions{display:flex;gap:6px;flex-shrink:0}
+.event-type-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:var(--accent-light);color:var(--accent);margin-bottom:4px}
+
+/* Event modal */
+.evt-modal-overlay{position:fixed;inset:0;background:rgba(13,27,42,0.65);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);animation:fadeIn 0.15s ease}
+.evt-modal-box{background:var(--cream);border-radius:18px;width:min(560px,94vw);max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.3);animation:slideUp 0.2s ease;-webkit-overflow-scrolling:touch}
+.evt-modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.evt-modal-title{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:var(--ink)}
+.evt-modal-body{padding:20px 24px 24px;display:flex;flex-direction:column;gap:14px}
+.evt-type-row{display:flex;flex-wrap:wrap;gap:8px}
+.evt-type-btn{padding:7px 14px;border-radius:20px;border:2px solid var(--border);background:none;font-size:13px;font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;color:var(--ink3);transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.evt-type-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+
+
+
+/* ── ATTENDANCE ── */
+.att-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.att-stat-box{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 4px var(--shadow)}
+.att-stat-num{font-family:'Georgia',serif;font-size:34px;font-weight:700;color:var(--accent);line-height:1}
+.att-stat-num.red{color:#c0392b}
+.att-stat-num.green{color:var(--green)}
+.att-stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink3);margin-top:6px}
+.att-day-banner{background:var(--accent-light);border:1px solid var(--accent2);border-radius:10px;padding:11px 16px;margin-bottom:16px;font-size:var(--fs-sm);color:var(--ink2);display:flex;align-items:center;gap:8px}
+.att-day-banner svg{width:15px;height:15px;stroke:var(--accent);flex-shrink:0}
+.att-top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.att-add-btn{display:flex;align-items:center;gap:7px;padding:10px 18px;background:#c0392b;color:white;border:none;border-radius:10px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif;transition:filter 0.2s;-webkit-tap-highlight-color:transparent}
+.att-add-btn:hover{filter:brightness(1.15)}
+.att-add-btn svg{width:15px;height:15px;stroke:white}
+.att-form-card{background:var(--paper);border:2px dashed #c0392b;border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;animation:fadeIn 0.15s ease}
+.att-form-title{font-family:'Georgia',serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.att-form-title::before{content:'';display:block;width:3px;height:18px;background:#c0392b;border-radius:2px}
+.att-reason-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.att-reason-btn{padding:7px 14px;border-radius:20px;border:2px solid var(--border);background:none;font-size:13px;font-weight:600;cursor:pointer;font-family:-apple-system,sans-serif;color:var(--ink3);transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.att-reason-btn.active{border-color:#c0392b;background:#fde8e8;color:#c0392b}
+.absence-card{background:var(--paper);border:1px solid var(--border);border-left:4px solid #c0392b;border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;gap:14px;align-items:center;transition:box-shadow 0.15s}
+.absence-card:hover{box-shadow:0 3px 10px var(--shadow)}
+.absence-date-badge{width:48px;flex-shrink:0;text-align:center}
+.abd-day{font-family:'Georgia',serif;font-size:26px;font-weight:700;color:#c0392b;line-height:1}
+.abd-mon{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3)}
+.absence-info{flex:1}
+.absence-reason-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#fde8e8;color:#c0392b;margin-bottom:3px}
+.absence-notes-text{font-size:var(--fs-sm);color:var(--ink3);margin-top:2px}
+
+/* ── COMPETENCES — always editable ── */
+/* Expand modal for comp cells */
+.comp-expand-modal{position:fixed;inset:0;background:rgba(13,27,42,0.65);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);animation:fadeIn 0.15s ease}
+.comp-expand-box{background:var(--cream);border-radius:18px;width:min(680px,92vw);max-height:85vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.3);animation:slideUp 0.2s ease;overflow:hidden}
+.comp-expand-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:2px solid var(--border);flex-shrink:0}
+.comp-expand-title{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:10px}
+.comp-expand-title span.week-badge{background:var(--accent);color:white;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:0.5px}
+.comp-expand-close{background:none;border:1px solid var(--border);border-radius:10px;padding:8px 16px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink3);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.comp-expand-close:hover{border-color:var(--accent);color:var(--accent)}
+.comp-expand-body{flex:1;overflow-y:auto;padding:20px 22px;-webkit-overflow-scrolling:touch}
+.comp-expand-textarea{width:100%;border:1px solid var(--border);border-radius:12px;padding:16px;font-size:var(--fs-base);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:white;color:var(--ink);outline:none;resize:none;line-height:1.8;min-height:260px;transition:border-color 0.2s;-webkit-appearance:none}
+.comp-expand-textarea:focus{border-color:var(--accent)}
+.comp-cell-btn{width:100%;text-align:left;background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:var(--fs-sm);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;color:var(--ink2);cursor:pointer;min-height:56px;line-height:1.5;transition:border-color 0.2s,background 0.15s;-webkit-tap-highlight-color:transparent;white-space:pre-wrap;word-break:break-word}
+.comp-cell-btn:hover,.comp-cell-btn:focus{border-color:var(--accent);background:white;outline:none}
+.comp-cell-empty{color:var(--ink3);font-style:italic}
+.comp-goals-row{margin-bottom:14px}
+.comp-goals-label{font-size:var(--fs-label);font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:6px;display:block}
+.comp-goals-input{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:10px;font-size:var(--fs-base);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--cream);color:var(--ink);outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+.comp-goals-input:focus{border-color:var(--accent);background:white}
+.comp-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+.comp-table th{text-align:left;padding:10px 11px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink3);background:var(--cream);border-bottom:2px solid var(--border)}
+.comp-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.comp-table tr:last-child td{border-bottom:none}
+.comp-table tr:hover td{background:var(--accent-light)}
+.comp-week-label{font-weight:800;font-size:12px;color:var(--accent);white-space:nowrap;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;letter-spacing:0.5px}
+.comp-input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:var(--fs-sm);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--cream);color:var(--ink);outline:none;resize:none;min-height:56px;line-height:1.5;transition:border-color 0.2s;-webkit-appearance:none}
+.comp-input:focus{border-color:var(--accent);background:white}
+.del-row-btn{background:none;border:none;color:var(--border);cursor:pointer;padding:4px;border-radius:6px;transition:color 0.15s;-webkit-tap-highlight-color:transparent}
+.del-row-btn:hover{color:#c0392b}
+.del-row-btn svg{width:14px;height:14px;stroke:currentColor}
+.add-week-btn{display:flex;align-items:center;gap:7px;padding:10px 18px;background:var(--green-light);color:var(--green);border:1px solid var(--green);border-radius:10px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:all 0.15s;margin-top:12px;-webkit-tap-highlight-color:transparent}
+.add-week-btn svg{width:15px;height:15px;stroke:currentColor}
+.add-week-btn:hover{background:var(--green);color:white}
+
+/* ── REPERTOIRE ── */
+.rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.rep-list{list-style:none}
+.rep-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.rep-item:last-child{border-bottom:none}
+.rep-num{font-size:12px;font-weight:700;color:var(--accent);width:20px;flex-shrink:0}
+.rep-text{flex:1;font-size:var(--fs-sm);color:var(--ink2)}
+.rep-input{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:var(--fs-sm);font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--cream);color:var(--ink);outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+.rep-input:focus{border-color:var(--accent);background:white}
+.rep-del{background:none;border:none;color:var(--border);cursor:pointer;padding:4px;border-radius:6px;transition:color 0.15s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center}
+.rep-del:hover{color:#c0392b}
+.rep-del svg{width:14px;height:14px;stroke:currentColor}
+.rep-add{width:100%;background:none;border:1px dashed var(--border);border-radius:9px;padding:8px;font-size:var(--fs-sm);color:var(--ink3);cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:all 0.15s;margin-top:5px;-webkit-tap-highlight-color:transparent}
+.rep-add:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(13,27,42,0.6);display:flex;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);animation:fadeIn 0.15s ease}
+.modal{background:var(--paper);border-radius:18px;padding:30px 34px;max-width:360px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.3);text-align:center;animation:slideUp 0.2s ease}
+.modal-icon{font-size:34px;margin-bottom:10px}
+.modal-title{font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;margin-bottom:5px}
+.modal-sub{font-size:var(--fs-sm);color:var(--ink3);margin-bottom:22px;line-height:1.5}
+.modal-btns{display:flex;gap:10px}
+.modal-btns button{flex:1;padding:12px;border-radius:10px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.modal-yes{background:#c0392b;color:white;border:none}
+.modal-yes:hover{background:#a93226}
+.modal-no{background:none;color:var(--ink2);border:1px solid var(--border)}
+.modal-no:hover{border-color:var(--ink2)}
+
+.hidden{display:none!important}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+@media(max-width:768px){
+  :root{--sidebar-w:260px}
+  .goals-grid{grid-template-columns:1fr}
+  .rep-grid{grid-template-columns:1fr}
+  .lesson-two-col{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .detail{padding:18px 16px}
+}
+@media(max-width:600px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;min-width:0;height:auto;max-height:38vh}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+        </svg>
+      </div>
+      <div>
+        <div class="header-title" id="hdr-title">Musikschule</div>
+        <div class="header-sub" id="hdr-sub">Schüler-Protokoll</div>
+      </div>
+    </div>
+    <div class="header-controls">
+      <button class="theme-btn" onclick="toggleThemePanel()">🎨 <span id="theme-label">Tema</span></button>
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('de')">DE</button>
+        <button class="lang-btn" onclick="setLang('es')">ES</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Theme panel -->
+  <div class="theme-panel hidden" id="theme-panel">
+    <div class="theme-swatch active" data-t="blue" onclick="setTheme('blue')" title="Azul"></div>
+    <div class="theme-swatch" data-t="slate" onclick="setTheme('slate')" title="Gris-Azul"></div>
+    <div class="theme-swatch" data-t="teal" onclick="setTheme('teal')" title="Verde azulado"></div>
+    <div class="theme-swatch" data-t="night" onclick="setTheme('night')" title="Noche"></div>
+    <div class="theme-swatch" data-t="warm" onclick="setTheme('warm')" title="Cálido"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="sidebar-label" id="lbl-students">Schüler (<span id="student-count">0</span>)</div>
+        <div class="search-wrap">
+          <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+          <input class="search-input" id="search-input" type="search" placeholder="Schüler suchen…" oninput="renderList()">
+        </div>
+      </div>
+      <div class="student-list" id="student-list"></div>
+      <button class="add-btn" onclick="newStudent()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="btn-new-label">Neuer Schüler</span>
+      </button>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+        <div class="empty-title" id="empty-title">Musikschule</div>
+        <p class="empty-sub" id="empty-sub">Noch keine Schüler erfasst.</p>
+        <button class="empty-btn" id="empty-btn" onclick="newStudent()">Ersten Schüler hinzufügen</button>
+      </div>
+      <div class="detail hidden" id="detail-view">
+        <div class="detail-header">
+          <div class="detail-avatar-name">
+            <div class="detail-avatar" id="d-avatar">?</div>
+            <div><div class="detail-name" id="d-name">—</div><div class="detail-since" id="d-since"></div></div>
+          </div>
+          <div class="detail-actions" id="d-actions"></div>
+        </div>
+        <div class="tabs" id="tabs"></div>
+        <div id="panel-info"></div>
+        <div id="panel-lessons" class="hidden"></div>
+        <div id="panel-competences" class="hidden"></div>
+        <div id="panel-repertoire" class="hidden"></div>
+        <div id="panel-calendar" class="hidden"></div>
+        <div id="panel-attendance" class="hidden"></div>
+        <div id="panel-attendance" class="hidden"></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal">
+    <div class="modal">
+      <div class="modal-icon">🗑️</div>
+      <div class="modal-title" id="modal-title">Wirklich löschen?</div>
+      <div class="modal-sub" id="modal-sub"></div>
+      <div class="modal-btns">
+        <button class="modal-yes" id="modal-yes">Ja</button>
+        <button class="modal-no" id="modal-no" onclick="hideModal()">Nein</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+
+// ── TRANSLATIONS ──────────────────────────────
+const T={
+  de:{
+    appTitle:"Musikschule",appSub:"Schüler-Protokoll",
+    students:"Schüler",newStudent:"Neuer Schüler",
+    searchPH:"Schüler suchen…",noStudents:"Noch keine Schüler erfasst.",
+    addFirst:"Ersten Schüler hinzufügen",
+    tabs:{info:"Personalblatt",lessons:"Stunden",comp:"Kompetenzen",rep:"Repertuar",cal:"Kalender",att:"Anwesenheit"},
+    name:"Name",address:"Adresse",phone:"Telefon",mobile:"Handy",email:"E-Mail",
+    bdate:"Geburtsdatum",start:"Beginn",sem:"Semester",day:"Tag",
+    ownGoals:"Eigene Ziele",wishSongs:"Wunschlieder",style:"Stil",
+    techGoals:"Technisches-Ziel",semGoals:"Semester-Ziel",techRem:"Technische-Bemerkungen",
+    save:"Speichern",cancel:"Abbrechen",edit:"Bearbeiten",del:"Löschen",
+    confirmDel:"Wirklich löschen?",
+    addLesson:"Stunde hinzufügen",lessonDate:"Datum",
+    aufgaben:"Aufgaben",hAufgaben:"H-Aufgaben",
+    noLessons:"Noch keine Stunden eingetragen.",
+    noLessonsHint:"Tippe auf + um die erste Stunde einzutragen.",
+    compTitle:"Kompetenzorientierung",compGoals:"Ziele",
+    musik1:"Musikerzeugen",musik2:"Musiklesern",musik3:"Musikausdrücken",theorie:"Theorie",
+    week:"Woche",addWeek:"Woche hinzufügen",
+    rep:"Repertuar",pendants:"Pendants",auftritte:"Auftritte",
+    remarks:"Bemerkungen",erreicht:"Erreichten-Ziele",addItem:"Hinzufügen",
+    yes:"Ja",no:"Nein",since:"Beginn:",tema:"Tema",attTitle:"Anwesenheitskontrolle",attAdd:"Abwesenheit eintragen",attDate:"Datum",attReason:"Grund",attNotes:"Bemerkungen",attReasons:["Krank","Urlaub","Vergessen","Sonstiges"],noAbsences:"Keine Abwesenheiten erfasst.",attTitle:"Anwesenheitskontrolle",attAdd:"Abwesenheit eintragen",attDate:"Datum",attReason:"Grund",attNoShow:"Fehlte",attPresent:"Anwesend",attReasons:["Krank","Urlaub","Vergessen","Sonstiges"],noAbsences:"Keine Abwesenheiten.",attStats:"Statistik",
+    addEvent:"Ereignis hinzufügen",evtTitle:"Titel / Konzert",evtDate:"Datum",evtTime:"Uhrzeit",evtPlace:"Ort",evtNotes:"Bemerkungen",noEvents:"Keine Termine eingetragen.",evtDelete:"Löschen",evtEdit:"Bearbeiten",eventTypes:["Konzert","Vorspiel","Probe","Prüfung","Sonstiges"],
+  },
+  es:{
+    appTitle:"Escuela de Música",appSub:"Protocolo de Alumnos",
+    students:"Alumnos",newStudent:"Nuevo Alumno",
+    searchPH:"Buscar alumno…",noStudents:"Aún no hay alumnos.",
+    addFirst:"Agregar primer alumno",
+    tabs:{info:"Ficha Personal",lessons:"Clases",comp:"Competencias",rep:"Repertorio",cal:"Calendario",att:"Asistencia"},
+    name:"Nombre",address:"Dirección",phone:"Teléfono",mobile:"Celular",email:"Correo electrónico",
+    bdate:"Fecha de nacimiento",start:"Inicio",sem:"Semestre",day:"Día",
+    ownGoals:"Objetivos propios",wishSongs:"Canciones deseadas",style:"Estilo",
+    techGoals:"Objetivo técnico",semGoals:"Objetivo semestral",techRem:"Observaciones técnicas",
+    save:"Guardar",cancel:"Cancelar",edit:"Editar",del:"Eliminar",
+    confirmDel:"¿Realmente eliminar?",
+    addLesson:"Agregar clase",lessonDate:"Fecha",
+    aufgaben:"Tareas",hAufgaben:"Tareas para casa",
+    noLessons:"Aún no hay clases registradas.",
+    noLessonsHint:"Toca + para agregar la primera clase.",
+    compTitle:"Competencias",compGoals:"Objetivos",
+    musik1:"Producir música",musik2:"Leer música",musik3:"Expresión musical",theorie:"Teoría",
+    week:"Semana",addWeek:"Agregar semana",
+    rep:"Repertorio",pendants:"Pendientes",auftritte:"Presentaciones",
+    remarks:"Observaciones",erreicht:"Objetivos alcanzados",addItem:"Agregar",
+    yes:"Sí",no:"No",since:"Inicio:",tema:"Theme",attTitle:"Control de Asistencia",attAdd:"Registrar ausencia",attDate:"Fecha",attReason:"Motivo",attNotes:"Notas",attReasons:["Enfermo/a","Vacaciones","Se olvidó","Otro"],noAbsences:"Sin ausencias registradas.",attTitle:"Control de Asistencia",attAdd:"Registrar ausencia",attDate:"Fecha",attReason:"Motivo",attNoShow:"Faltó",attPresent:"Presente",attReasons:["Enfermo/a","Vacaciones","Se olvidó","Otro"],noAbsences:"Sin ausencias registradas.",attStats:"Estadísticas",
+    addEvent:"Agregar evento",evtTitle:"Título / Concierto",evtDate:"Fecha",evtTime:"Hora",evtPlace:"Lugar",evtNotes:"Notas",noEvents:"No hay eventos registrados.",evtDelete:"Eliminar",evtEdit:"Editar",eventTypes:["Concierto","Audición","Ensayo","Examen","Otro"],
+  }
+};
+
+// ── STATE ─────────────────────────────────────
+let lang='de',students=[],selectedId=null,editing=false,draft=null;
+let activeTab='info',expandedLessonId=null,editingLessonId=null,currentTheme='blue';
+const t=()=>T[lang];
+const uid=()=>Math.random().toString(36).slice(2,10);
+const SKEY='musikschule-v3';
+
+function load(){
+  try{students=JSON.parse(localStorage.getItem(SKEY))||[];}catch{students=[];}
+  try{
+    const saved=localStorage.getItem('msk-theme')||'blue';
+    setTheme(saved,true);
+    const sl=localStorage.getItem('msk-lang')||'de';
+    if(sl!==lang){lang=sl;document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&sl==='de')||(i===1&&sl==='es')));}
+  }catch{}
+}
+function persist(){try{localStorage.setItem(SKEY,JSON.stringify(students));}catch{}}
+
+function emptyStudent(){
+  return{id:uid(),name:'',address:'',phone:'',mobile:'',email:'',
+    birthdate:'',startDate:'',semester:'',day:'',
+    ownGoals:['','',''],wishSongs:['','',''],style:['','',''],
+    techGoals:['','',''],semGoals:['','',''],techRem:['','','',''],
+    lessons:[],competences:[],compGoals:'',
+    repertoire:[],pendants:[],auftritte:[],remarks:[],erreicht:[],events:[],absences:[]};
+}
+
+// ── THEME ─────────────────────────────────────
+const themeMap={'blue':undefined,'slate':'slate','teal':'teal','night':'night','warm':'warm'};
+function setTheme(name,silent){
+  currentTheme=name;
+  document.documentElement.removeAttribute('data-theme');
+  if(themeMap[name]) document.documentElement.setAttribute('data-theme',themeMap[name]);
+  document.querySelectorAll('.theme-swatch').forEach(s=>s.classList.toggle('active',s.dataset.t===name));
+  if(!silent) try{localStorage.setItem('msk-theme',name);}catch{}
+  document.getElementById('theme-panel').classList.add('hidden');
+}
+function toggleThemePanel(){
+  document.getElementById('theme-panel').classList.toggle('hidden');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.theme-btn')&&!e.target.closest('.theme-panel'))
+    document.getElementById('theme-panel').classList.add('hidden');
+});
+
+// ── LANG ──────────────────────────────────────
+function setLang(l){
+  lang=l;
+  document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&l==='de')||(i===1&&l==='es')));
+  try{localStorage.setItem('msk-lang',l);}catch{}
+  renderAll();
+}
+
+// ── HELPERS ───────────────────────────────────
+function initials(n){if(!n)return'?';return n.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}.${y}`;}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function svgPlus(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:15px;height:15px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;}
+function svgTrash(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`;}
+function svgEdit(){return`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;}
+function getStudent(){return(editing&&draft)?draft:students.find(s=>s.id===selectedId);}
+
+// ── RENDER ALL ────────────────────────────────
+function renderAll(){updateStatic();renderList();renderDetail();}
+function updateStatic(){
+  const x=t();
+  document.getElementById('hdr-title').textContent=x.appTitle;
+  document.getElementById('hdr-sub').textContent=x.appSub;
+  document.getElementById('lbl-students').innerHTML=x.students+' (<span id="student-count">'+students.length+'</span>)';
+  document.getElementById('btn-new-label').textContent=x.newStudent;
+  document.getElementById('search-input').placeholder=x.searchPH;
+  document.getElementById('empty-title').textContent=x.appTitle;
+  document.getElementById('empty-sub').textContent=x.noStudents;
+  document.getElementById('empty-btn').textContent=x.addFirst;
+  document.getElementById('theme-label').textContent=x.tema;
+  document.getElementById('modal-no').textContent=x.no;
+}
+
+// ── SIDEBAR ───────────────────────────────────
+function renderList(){
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const filtered=students.filter(s=>s.name.toLowerCase().includes(q)).slice()
+    .sort((a,b)=>(a.name||'').localeCompare(b.name||'',undefined,{sensitivity:'base'}));
+  const list=document.getElementById('student-list');
+  document.getElementById('student-count').textContent=students.length;
+  if(filtered.length===0){list.innerHTML=`<div style="padding:22px 12px;text-align:center;color:var(--ink3);font-size:13px">${t().noStudents}</div>`;return;}
+  const groups={};
+  filtered.forEach(s=>{const l=(s.name||'?')[0].toUpperCase();if(!groups[l])groups[l]=[];groups[l].push(s);});
+  let html='';
+  Object.keys(groups).sort().forEach(letter=>{
+    html+=`<div class="alpha-group"><div class="alpha-header">${letter}</div>`;
+    groups[letter].forEach(s=>{
+      html+=`<div class="student-item${s.id===selectedId?' active':''}" onclick="selectStudent('${s.id}')">
+        <div class="student-avatar">${initials(s.name)}</div>
+        <div><div class="student-name">${esc(s.name)||'—'}</div>
+        <div class="student-meta">${esc(s.day||'')}${s.semester?' · '+esc(s.semester):''}</div></div></div>`;
+    });
+    html+=`</div>`;
+  });
+  list.innerHTML=html;
+}
+
+// ── STUDENT CRUD ──────────────────────────────
+function selectStudent(id){selectedId=id;editing=false;draft=null;activeTab='info';expandedLessonId=null;editingLessonId=null;renderAll();}
+function newStudent(){draft=emptyStudent();selectedId=draft.id;editing=true;activeTab='info';renderAll();}
+function startEdit(){draft=JSON.parse(JSON.stringify(students.find(x=>x.id===selectedId)));editing=true;renderAll();}
+function saveEdit(){
+  const idx=students.findIndex(s=>s.id===draft.id);
+  if(idx>=0)students[idx]=draft;else students.push(draft);
+  persist();selectedId=draft.id;editing=false;draft=null;renderAll();
+}
+function cancelEdit(){
+  if(!students.find(s=>s.id===(draft||{}).id))selectedId=null;
+  editing=false;draft=null;renderAll();
+}
+function deleteStudentConfirm(){
+  const s=getStudent();
+  showModal(t().confirmDel,s.name,()=>{
+    students=students.filter(x=>x.id!==selectedId);persist();
+    selectedId=null;editing=false;draft=null;hideModal();renderAll();
+  });
+}
+
+// ── MODAL ─────────────────────────────────────
+function showModal(title,sub,onYes){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-sub').textContent=sub;
+  document.getElementById('modal-yes').textContent=t().yes;
+  document.getElementById('modal-yes').onclick=onYes;
+  document.getElementById('modal').classList.remove('hidden');
+}
+function hideModal(){document.getElementById('modal').classList.add('hidden');}
+
+// ── DETAIL ────────────────────────────────────
+function renderDetail(){
+  const s=getStudent();
+  const empty=document.getElementById('empty-state');
+  const detail=document.getElementById('detail-view');
+  if(!s){empty.classList.remove('hidden');detail.classList.add('hidden');return;}
+  empty.classList.add('hidden');detail.classList.remove('hidden');
+  document.getElementById('d-avatar').textContent=initials(s.name);
+  document.getElementById('d-name').textContent=s.name||'—';
+  document.getElementById('d-since').textContent=s.startDate?t().since+' '+fmtDate(s.startDate):'';
+  const acts=document.getElementById('d-actions');
+  if(editing){
+    acts.innerHTML=`<button class="btn-save" onclick="saveEdit()">${t().save}</button><button class="btn-cancel" onclick="cancelEdit()">${t().cancel}</button>`;
+  } else {
+    acts.innerHTML=`<button class="btn-icon" onclick="startEdit()">${svgEdit()} ${t().edit}</button><button class="btn-icon danger" onclick="deleteStudentConfirm()">${svgTrash()} ${t().del}</button>`;
+  }
+  const tabKeys=['info','lessons','comp','rep','cal','att'];
+  document.getElementById('tabs').innerHTML=tabKeys.map(k=>`
+    <button class="tab-btn${activeTab===k?' active':''}" onclick="switchTab('${k}')">${tabIcon(k)} ${t().tabs[k]}</button>`).join('');
+  renderPanel();
+}
+function tabIcon(k){
+  return{
+    info:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+    lessons:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+    comp:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+    rep:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+    att:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+    att:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+    cal:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  }[k]||'';
+}
+function switchTab(k){
+  activeTab=k;
+  ['info','lessons','comp','rep','cal','att'].forEach(tab=>{
+    const pid=`panel-${tab==='comp'?'competences':tab==='rep'?'repertoire':tab}`;
+    document.getElementById(pid).classList.toggle('hidden',tab!==k);
+  });
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['info','lessons','comp','rep','cal','att'][i]===k));
+  renderPanel();
+}
+function renderPanel(){
+  if(activeTab==='info')renderInfo();
+  else if(activeTab==='lessons')renderLessons();
+  else if(activeTab==='comp')renderCompetences();
+  else if(activeTab==='rep')renderRepertoire();
+  else if(activeTab==='cal')renderCalendar();
+  else if(activeTab==='att')renderAttendance();
+}
+
+// ── FIELD HELPERS ─────────────────────────────
+function inp(field,val,type='text'){
+  const ro=!editing?'readonly':'';
+  return`<input class="form-input" type="${type}" value="${esc(val||'')}" ${ro} onchange="updateField('${field}',this.value)" oninput="updateField('${field}',this.value)">`;
+}
+function updateField(field,val){
+  const s=getStudent();if(!s)return;
+  if(field.includes('.')){const[f,i]=field.split('.');s[f]=s[f]||[];s[f][parseInt(i)]=val;}
+  else s[field]=val;
+  if(!editing)persist();
+}
+function listBlock(field,items,title){
+  const rows=(items||[]).map((v,i)=>`
+    <div class="list-row"><span class="list-num">${i+1}</span>
+      <input class="list-input" value="${esc(v)}" ${!editing?'readonly':''}
+        onchange="updateField('${field}.${i}',this.value)"
+        oninput="updateField('${field}.${i}',this.value)">
+      ${editing?`<button class="list-del" onclick="listDel('${field}',${i})">${svgTrash()}</button>`:''}
+    </div>`).join('');
+  const add=editing?`<button class="list-add" onclick="listAdd('${field}')">+ ${t().addItem}</button>`:'';
+  return`<div class="card"><div class="card-title">${title}</div><div class="list-inputs">${rows}${add}</div></div>`;
+}
+function listAdd(f){const s=getStudent();if(!s)return;s[f]=[...(s[f]||[]),''];renderPanel();}
+function listDel(f,idx){const s=getStudent();if(!s)return;s[f]=(s[f]||[]).filter((_,i)=>i!==idx);renderPanel();}
+
+// ── TAB: INFO ─────────────────────────────────
+function renderInfo(){
+  const s=getStudent();if(!s)return;
+  const x=t();
+  document.getElementById('panel-info').innerHTML=`
+    <div class="card">
+      <div class="card-title">${x.name}</div>
+      <div class="form-grid">
+        <div class="form-group form-full"><label class="form-label">${x.name}</label>${inp('name',s.name)}</div>
+        <div class="form-group form-full"><label class="form-label">${x.address}</label>${inp('address',s.address)}</div>
+        <div class="form-group"><label class="form-label">${x.phone}</label>${inp('phone',s.phone,'tel')}</div>
+        <div class="form-group"><label class="form-label">${x.mobile}</label>${inp('mobile',s.mobile,'tel')}</div>
+        <div class="form-group form-full"><label class="form-label">${x.email}</label>${inp('email',s.email,'email')}</div>
+        <div class="form-group"><label class="form-label">${x.bdate}</label>${inp('birthdate',s.birthdate,'date')}</div>
+        <div class="form-group"><label class="form-label">${x.start}</label>${inp('startDate',s.startDate,'date')}</div>
+        <div class="form-group"><label class="form-label">${x.sem}</label>${inp('semester',s.semester)}</div>
+        <div class="form-group"><label class="form-label">${x.day}</label>${inp('day',s.day)}</div>
+      </div>
+    </div>
+    <div class="goals-grid">
+      ${listBlock('ownGoals',s.ownGoals,x.ownGoals)}
+      ${listBlock('wishSongs',s.wishSongs,x.wishSongs)}
+      ${listBlock('style',s.style,x.style)}
+      ${listBlock('techGoals',s.techGoals,x.techGoals)}
+      ${listBlock('semGoals',s.semGoals,x.semGoals)}
+      ${listBlock('techRem',s.techRem,x.techRem)}
+    </div>`;
+}
+
+// ── TAB: LESSONS ──────────────────────────────
+function renderLessons(){
+  const s=getStudent();if(!s)return;
+  const x=t();const lessons=s.lessons||[];
+  let html=`<div class="lesson-top-bar">
+    <span class="lesson-count-label">${lessons.length} ${x.tabs.lessons}</span>
+    <button class="lesson-add-btn" onclick="showNewLessonForm()">${svgPlus()} ${x.addLesson}</button>
+  </div><div id="new-lesson-form" class="hidden"></div>`;
+  if(lessons.length===0){
+    html+=`<div class="card no-lessons"><div class="no-lessons-icon">📋</div>
+      <div class="no-lessons-title">${x.noLessons}</div>
+      <div class="no-lessons-hint">${x.noLessonsHint}</div></div>`;
+  } else {
+    html+=`<div class="lesson-diary">`;
+    lessons.forEach((lesson,idx)=>{
+      const isOpen=expandedLessonId===lesson.id;
+      const isEditing=editingLessonId===lesson.id;
+      html+=`<div class="diary-entry${isOpen?' open':''}" id="entry-${lesson.id}">
+        <div class="diary-row" onclick="toggleLesson('${lesson.id}')">
+          <div class="diary-index">${lessons.length-idx}</div>
+          <div class="diary-dot"></div>
+          <div class="diary-date">${fmtDate(lesson.date)}</div>
+          <div class="diary-preview">${isOpen?'':esc((lesson.aufgaben||'').slice(0,70))}</div>
+          <div class="diary-chevron">${isOpen?'▲':'▼'}</div>
+        </div>`;
+      if(isOpen){
+        if(isEditing){
+          html+=`<div class="diary-body">
+            <div style="margin-bottom:12px">
+              <label class="form-label" style="display:block;margin-bottom:5px">${x.lessonDate}</label>
+              <input class="form-input" type="date" value="${esc(lesson.date||'')}" style="max-width:210px"
+                onchange="updateLessonField('${lesson.id}','date',this.value)">
+            </div>
+            <div class="lesson-two-col">
+              <div class="lesson-field-block">
+                <div class="lesson-field-label">${x.aufgaben}</div>
+                <textarea class="lesson-textarea" rows="5" onchange="updateLessonField('${lesson.id}','aufgaben',this.value)" oninput="updateLessonField('${lesson.id}','aufgaben',this.value)">${esc(lesson.aufgaben||'')}</textarea>
+              </div>
+              <div class="lesson-field-block">
+                <div class="lesson-field-label">${x.hAufgaben}</div>
+                <textarea class="lesson-textarea" rows="5" onchange="updateLessonField('${lesson.id}','hAufgaben',this.value)" oninput="updateLessonField('${lesson.id}','hAufgaben',this.value)">${esc(lesson.hAufgaben||'')}</textarea>
+              </div>
+            </div>
+            <div class="diary-actions">
+              <button class="btn-save" onclick="saveLessonEdit('${lesson.id}')">${x.save}</button>
+              <button class="btn-cancel" onclick="cancelLessonEdit()">${x.cancel}</button>
+            </div></div>`;
+        } else {
+          html+=`<div class="diary-body">
+            <div class="lesson-two-col">
+              <div class="lesson-field-block">
+                <div class="lesson-field-label">${x.aufgaben}</div>
+                <div class="lesson-text">${esc(lesson.aufgaben||'')||'<span style="color:var(--border)">—</span>'}</div>
+              </div>
+              <div class="lesson-field-block">
+                <div class="lesson-field-label">${x.hAufgaben}</div>
+                <div class="lesson-text">${esc(lesson.hAufgaben||'')||'<span style="color:var(--border)">—</span>'}</div>
+              </div>
+            </div>
+            <div class="diary-actions">
+              <button class="btn-icon" onclick="startLessonEdit('${lesson.id}')">${svgEdit()} ${x.edit}</button>
+              <button class="btn-icon danger" onclick="deleteLesson('${lesson.id}')">${svgTrash()} ${x.del}</button>
+            </div></div>`;
+        }
+      }
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  }
+  document.getElementById('panel-lessons').innerHTML=html;
+}
+
+function showNewLessonForm(){
+  const x=t();
+  const today=new Date().toISOString().slice(0,10);
+  const f=document.getElementById('new-lesson-form');
+  f.classList.remove('hidden');
+  f.innerHTML=`<div class="new-lesson-card">
+    <div class="new-lesson-title">${x.addLesson}</div>
+    <div style="margin-bottom:14px">
+      <label class="form-label" style="display:block;margin-bottom:5px">${x.lessonDate}</label>
+      <input class="form-input" type="date" id="nl-date" value="${today}" style="max-width:210px">
+    </div>
+    <div class="lesson-two-col">
+      <div class="lesson-field-block">
+        <div class="lesson-field-label">${x.aufgaben}</div>
+        <textarea class="lesson-textarea" id="nl-auf" rows="5" placeholder="—"></textarea>
+      </div>
+      <div class="lesson-field-block">
+        <div class="lesson-field-label">${x.hAufgaben}</div>
+        <textarea class="lesson-textarea" id="nl-h" rows="5" placeholder="—"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-save" onclick="addLesson()">${x.save}</button>
+      <button class="btn-cancel" onclick="hideNewLessonForm()">${x.cancel}</button>
+    </div></div>`;
+  f.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function hideNewLessonForm(){const f=document.getElementById('new-lesson-form');if(f){f.classList.add('hidden');f.innerHTML='';}}
+function addLesson(){
+  const s=getStudent();if(!s)return;
+  const date=document.getElementById('nl-date').value;
+  const auf=document.getElementById('nl-auf').value;
+  const h=document.getElementById('nl-h').value;
+  if(!date)return;
+  s.lessons=[{id:uid(),date,aufgaben:auf,hAufgaben:h},...(s.lessons||[])];
+  persist();expandedLessonId=s.lessons[0].id;editingLessonId=null;renderLessons();
+}
+function toggleLesson(id){if(editingLessonId===id)return;expandedLessonId=expandedLessonId===id?null:id;renderLessons();}
+function startLessonEdit(id){editingLessonId=id;expandedLessonId=id;renderLessons();}
+function cancelLessonEdit(){editingLessonId=null;renderLessons();}
+function updateLessonField(id,field,val){
+  const s=getStudent();if(!s)return;
+  const l=(s.lessons||[]).find(x=>x.id===id);if(l)l[field]=val;
+}
+function saveLessonEdit(id){persist();editingLessonId=null;renderLessons();}
+function deleteLesson(id){
+  const s=getStudent();if(!s)return;
+  showModal(t().confirmDel,fmtDate((s.lessons.find(l=>l.id===id)||{}).date||''),()=>{
+    s.lessons=s.lessons.filter(l=>l.id!==id);persist();
+    if(expandedLessonId===id)expandedLessonId=null;
+    if(editingLessonId===id)editingLessonId=null;
+    hideModal();renderLessons();
+  });
+}
+
+// ── TAB: COMPETENCES — always interactive ─────
+function renderCompetences(){
+  const s=getStudent();if(!s)return;
+  const x=t();const rows=(s.competences||[]);
+  const cols=['m1','m2','m3','theorie'];
+  const colLabels=[x.musik1,x.musik2,x.musik3,x.theorie];
+  let html=`<div class="card">
+    <div class="card-title">${x.compTitle}</div>
+    <div class="comp-goals-row">
+      <label class="comp-goals-label">${x.compGoals}</label>
+      <input class="comp-goals-input" value="${esc(s.compGoals||'')}"
+        onchange="updateCompGoals(this.value)" oninput="updateCompGoals(this.value)">
+    </div>
+    <div style="overflow-x:auto">
+    <table class="comp-table">
+      <thead><tr>
+        <th>${x.week}</th><th>${x.musik1}</th><th>${x.musik2}</th><th>${x.musik3}</th><th>${x.theorie}</th><th></th>
+      </tr></thead>
+      <tbody>`;
+  rows.forEach((row,i)=>{
+    html+=`<tr><td><span class="comp-week-label">${x.week} ${i+1}</span></td>`;
+    cols.forEach((f,ci)=>{
+      const val=row[f]||'';
+      const preview=val.length>60?val.slice(0,60)+'…':val;
+      html+=`<td><button class="comp-cell-btn" onclick="openCompExpand(${i},'${f}','${esc(colLabels[ci])}')" title="${esc(colLabels[ci])}">
+        ${val?`<span>${esc(preview)}</span>`:`<span class="comp-cell-empty">+</span>`}
+      </button></td>`;
+    });
+    html+=`<td><button class="del-row-btn" onclick="delCompRow(${i})">${svgTrash()}</button></td></tr>`;
+  });
+  html+=`</tbody></table></div>
+    <button class="add-week-btn" onclick="addCompRow()">${svgPlus()} ${x.addWeek}</button>
+  </div>`;
+  document.getElementById('panel-competences').innerHTML=html;
+}
+
+function openCompExpand(rowIdx, field, colLabel){
+  const s=getStudent();if(!s)return;
+  const x=t();
+  s.competences=s.competences||[];
+  if(!s.competences[rowIdx])s.competences[rowIdx]={};
+  const currentVal=s.competences[rowIdx][field]||'';
+  // Remove existing expand modal if any
+  const existing=document.getElementById('comp-expand-modal');
+  if(existing)existing.remove();
+  const modal=document.createElement('div');
+  modal.className='comp-expand-modal';
+  modal.id='comp-expand-modal';
+  modal.innerHTML=`
+    <div class="comp-expand-box">
+      <div class="comp-expand-header">
+        <div class="comp-expand-title">
+          <span class="week-badge">${x.week} ${rowIdx+1}</span>
+          ${colLabel}
+        </div>
+        <button class="comp-expand-close" onclick="closeCompExpand(${rowIdx},'${field}')">${x.save} ✓</button>
+      </div>
+      <div class="comp-expand-body">
+        <textarea class="comp-expand-textarea" id="comp-expand-ta"
+          placeholder="…"
+          oninput="liveUpdateComp(${rowIdx},'${field}',this.value)"
+          onchange="liveUpdateComp(${rowIdx},'${field}',this.value)">${esc(currentVal)}</textarea>
+      </div>
+    </div>`;
+  // Close on backdrop click
+  modal.addEventListener('click', e=>{
+    if(e.target===modal) closeCompExpand(rowIdx,field);
+  });
+  document.body.appendChild(modal);
+  // Focus and move cursor to end
+  setTimeout(()=>{
+    const ta=document.getElementById('comp-expand-ta');
+    if(ta){ta.focus();ta.selectionStart=ta.selectionEnd=ta.value.length;}
+  },100);
+}
+
+function liveUpdateComp(rowIdx,field,val){
+  const s=getStudent();if(!s)return;
+  s.competences=s.competences||[];
+  if(!s.competences[rowIdx])s.competences[rowIdx]={};
+  s.competences[rowIdx][field]=val;
+  if(!editing)persist();
+}
+
+function closeCompExpand(rowIdx,field){
+  const modal=document.getElementById('comp-expand-modal');
+  if(modal)modal.remove();
+  renderCompetences();
+}
+
+function updateCompGoals(val){const s=getStudent();if(s){s.compGoals=val;if(!editing)persist();}}
+function updateCompRow(i,field,val){
+  const s=getStudent();if(!s)return;
+  s.competences=s.competences||[];
+  if(!s.competences[i])s.competences[i]={};
+  s.competences[i][field]=val;
+  if(!editing)persist();
+}
+function addCompRow(){const s=getStudent();if(!s)return;s.competences=[...(s.competences||[]),{m1:'',m2:'',m3:'',theorie:''}];renderCompetences();}
+function delCompRow(i){const s=getStudent();if(!s)return;s.competences=(s.competences||[]).filter((_,j)=>j!==i);persist();renderCompetences();}
+
+// ── TAB: REPERTOIRE ───────────────────────────
+function renderRepertoire(){
+  const s=getStudent();if(!s)return;
+  const x=t();
+  const sections=[['repertoire',x.rep],['pendants',x.pendants],['auftritte',x.auftritte],['remarks',x.remarks],['erreicht',x.erreicht]];
+  let html=`<div class="rep-grid">`;
+  sections.forEach(([field,label])=>{
+    const items=s[field]||[];
+    html+=`<div class="card"><div class="card-title">${label}</div><ul class="rep-list">`;
+    items.forEach((item,i)=>{
+      html+=`<li class="rep-item"><span class="rep-num">${i+1}.</span>`;
+      if(editing){
+        html+=`<input class="rep-input" value="${esc(item)}" onchange="updateField('${field}.${i}',this.value)" oninput="updateField('${field}.${i}',this.value)">
+          <button class="rep-del" onclick="listDel('${field}',${i})">${svgTrash()}</button>`;
+      } else {
+        html+=`<span class="rep-text">${esc(item)||'<span style="color:var(--border)">—</span>'}</span>`;
+      }
+      html+=`</li>`;
+    });
+    html+=`</ul>`;
+    if(editing) html+=`<button class="rep-add" onclick="listAdd('${field}')">+ ${x.addItem}</button>`;
+    html+=`</div>`;
+  });
+  html+=`</div>`;
+  document.getElementById('panel-repertoire').innerHTML=html;
+}
+
+// ── CALENDAR ─────────────────────────────────
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+let editingEventId=null;
+
+const MONTHS_DE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const MONTHS_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DOWS_DE=['Mo','Di','Mi','Do','Fr','Sa','So'];
+const DOWS_ES=['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
+
+function renderCalendar(){
+  const s=getStudent();if(!s)return;
+  const x=t();
+  const events=(s.events||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const months=lang==='de'?MONTHS_DE:MONTHS_ES;
+  const dows=lang==='de'?DOWS_DE:DOWS_ES;
+  const today=new Date();
+  const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  // Build calendar grid
+  const firstDay=new Date(calYear,calMonth,1);
+  const lastDay=new Date(calYear,calMonth+1,0);
+  // Monday-first: 0=Mon..6=Sun
+  let startDow=(firstDay.getDay()+6)%7;
+  const totalCells=Math.ceil((startDow+lastDay.getDate())/7)*7;
+
+  let gridHtml=dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let c=0;c<totalCells;c++){
+    const dayNum=c-startDow+1;
+    const inMonth=dayNum>=1&&dayNum<=lastDay.getDate();
+    const dateStr=inMonth?`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`:'';
+    const dayEvents=inMonth?events.filter(e=>e.date===dateStr):[];
+    const isToday=dateStr===todayStr;
+    const cls=['cal-day',!inMonth?'other-month':'',isToday?'today':'',dayEvents.length?'has-event':''].filter(Boolean).join(' ');
+    gridHtml+=`<div class="${cls}" ${inMonth?`onclick="calDayClick('${dateStr}')"`:''}>
+      <div class="cal-day-num">${inMonth?dayNum:''}</div>
+      ${dayEvents.slice(0,2).map((e,i)=>`<div class="cal-event-chip type-${e.typeIdx||0}" onclick="event.stopPropagation();openEventModal('${e.id}')">${esc(e.title||'?')}</div>`).join('')}
+      ${dayEvents.length>2?`<div style="font-size:10px;color:var(--ink3);padding:1px 3px">+${dayEvents.length-2}</div>`:''}
+    </div>`;
+  }
+
+  // Upcoming events list
+  const upcoming=events.filter(e=>e.date>=todayStr);
+  const past=events.filter(e=>e.date<todayStr).reverse();
+  const listHtml=renderEventList(upcoming.concat(past),x);
+
+  document.getElementById('panel-calendar').innerHTML=`
+    <div class="card">
+      <div class="cal-header">
+        <div class="cal-month-nav">
+          <button class="cal-nav-btn" onclick="calPrev()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="cal-month-title">${months[calMonth]} ${calYear}</div>
+          <button class="cal-nav-btn" onclick="calNext()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><polyline points="9 6 15 12 9 18"/></svg></button>
+        </div>
+        <button class="cal-add-btn" onclick="openEventModal(null)">${svgPlus()} ${x.addEvent}</button>
+      </div>
+      <div class="cal-grid">${gridHtml}</div>
+    </div>
+    <div class="card">
+      <div class="upcoming-title">🎵 ${x.addEvent.replace('Agregar ','').replace('hinzufügen','').trim()} — ${months[calMonth]} ${calYear}</div>
+      ${listHtml||`<div style="text-align:center;padding:24px;color:var(--ink3);font-size:var(--fs-sm)">${x.noEvents}</div>`}
+    </div>`;
+}
+
+function renderEventList(events,x){
+  if(!events.length)return'';
+  const months=lang==='de'?MONTHS_DE:MONTHS_ES;
+  return events.map(e=>{
+    const [y,m,d]=e.date.split('-');
+    const mon=months[parseInt(m)-1]||'';
+    const typeColors=['#2563A8','#2E7D6B','#7B5EA7','#C0812A','#c0392b'];
+    const typeColor=typeColors[e.typeIdx||0]||typeColors[0];
+    return`<div class="event-card">
+      <div class="event-date-badge" style="background:${typeColor}">
+        <div class="edb-day">${d}</div>
+        <div class="edb-mon">${mon.slice(0,3)}</div>
+      </div>
+      <div class="event-info">
+        <div class="event-type-badge" style="background:${typeColor}22;color:${typeColor}">${(x.eventTypes||[])[e.typeIdx||0]||''}</div>
+        <div class="event-title">${esc(e.title||'')}</div>
+        <div class="event-meta">
+          ${e.time?`<span><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${esc(e.time)}</span>`:''}
+          ${e.place?`<span><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(e.place)}</span>`:''}
+        </div>
+        ${e.notes?`<div style="font-size:var(--fs-sm);color:var(--ink3);margin-top:4px">${esc(e.notes)}</div>`:''}
+      </div>
+      <div class="event-actions">
+        <button class="btn-icon" onclick="openEventModal('${e.id}')">${svgEdit()}</button>
+        <button class="btn-icon danger" onclick="deleteEvent('${e.id}')">${svgTrash()}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+function calDayClick(dateStr){openEventModal(null,dateStr);}
+
+let evtDraft={};
+function openEventModal(id,prefillDate){
+  const s=getStudent();if(!s)return;
+  const x=t();
+  const existing=id?(s.events||[]).find(e=>e.id===id):null;
+  editingEventId=id||null;
+  evtDraft=existing?{...existing}:{id:uid(),date:prefillDate||new Date().toISOString().slice(0,10),time:'',place:'',title:'',notes:'',typeIdx:0};
+
+  const removeModal=()=>{const m=document.getElementById('evt-modal');if(m)m.remove();};
+  removeModal();
+  const modal=document.createElement('div');
+  modal.className='evt-modal-overlay';modal.id='evt-modal';
+  modal.addEventListener('click',e=>{if(e.target===modal)removeModal();});
+
+  const typeButtons=(x.eventTypes||[]).map((tp,i)=>
+    `<button class="evt-type-btn${evtDraft.typeIdx===i?' active':''}" onclick="evtSetType(${i})">${tp}</button>`
+  ).join('');
+
+  modal.innerHTML=`<div class="evt-modal-box">
+    <div class="evt-modal-head">
+      <div class="evt-modal-title">${existing?x.evtEdit:x.addEvent}</div>
+      <button class="comp-expand-close" onclick="document.getElementById('evt-modal').remove()">${x.cancel}</button>
+    </div>
+    <div class="evt-modal-body">
+      <div class="form-group">
+        <label class="form-label">Typ / Tipo</label>
+        <div class="evt-type-row" id="evt-type-row">${typeButtons}</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">${x.evtTitle}</label>
+        <input class="form-input" id="evt-title" value="${esc(evtDraft.title||'')}" placeholder="…"
+          oninput="evtDraft.title=this.value">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">${x.evtDate}</label>
+          <input class="form-input" type="date" id="evt-date" value="${esc(evtDraft.date||'')}"
+            oninput="evtDraft.date=this.value">
+        </div>
+        <div class="form-group">
+          <label class="form-label">${x.evtTime}</label>
+          <input class="form-input" type="time" id="evt-time" value="${esc(evtDraft.time||'')}"
+            oninput="evtDraft.time=this.value">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">${x.evtPlace}</label>
+        <input class="form-input" id="evt-place" value="${esc(evtDraft.place||'')}" placeholder="…"
+          oninput="evtDraft.place=this.value">
+      </div>
+      <div class="form-group">
+        <label class="form-label">${x.evtNotes}</label>
+        <textarea class="form-textarea" id="evt-notes" rows="3"
+          oninput="evtDraft.notes=this.value">${esc(evtDraft.notes||'')}</textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:6px">
+        <button class="btn-save" onclick="saveEvent()">${x.save}</button>
+        <button class="btn-cancel" onclick="document.getElementById('evt-modal').remove()">${x.cancel}</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('evt-title')?.focus(),100);
+}
+
+function evtSetType(i){
+  evtDraft.typeIdx=i;
+  document.querySelectorAll('.evt-type-btn').forEach((b,idx)=>b.classList.toggle('active',idx===i));
+}
+
+function saveEvent(){
+  const s=getStudent();if(!s)return;
+  if(!evtDraft.date||!evtDraft.title){alert('Bitte Datum und Titel angeben / Ingresa fecha y título');return;}
+  s.events=s.events||[];
+  const idx=s.events.findIndex(e=>e.id===evtDraft.id);
+  if(idx>=0)s.events[idx]={...evtDraft};
+  else s.events.push({...evtDraft});
+  persist();
+  // Jump calendar to event month
+  const[y,m]=evtDraft.date.split('-');
+  calYear=parseInt(y);calMonth=parseInt(m)-1;
+  document.getElementById('evt-modal')?.remove();
+  renderCalendar();
+}
+
+function deleteEvent(id){
+  const s=getStudent();if(!s)return;
+  showModal(t().confirmDel,''  ,()=>{
+    s.events=(s.events||[]).filter(e=>e.id!==id);
+    persist();hideModal();renderCalendar();
+  });
+}
+
+
+
+// Expose to global scope (needed for CodePen and inline handlers)
+window.addCompRow=addCompRow;
+window.addLesson=addLesson;
+window.calDayClick=calDayClick;
+window.calNext=calNext;
+window.calPrev=calPrev;
+window.cancelEdit=cancelEdit;
+window.cancelLessonEdit=cancelLessonEdit;
+window.closeCompExpand=closeCompExpand;
+window.delCompRow=delCompRow;
+window.deleteEvent=deleteEvent;
+window.deleteLesson=deleteLesson;
+window.deleteStudentConfirm=deleteStudentConfirm;
+window.evtSetType=evtSetType;
+window.hideModal=hideModal;
+window.hideNewLessonForm=hideNewLessonForm;
+window.listAdd=listAdd;
+window.listDel=listDel;
+window.liveUpdateComp=liveUpdateComp;
+window.newStudent=newStudent;
+window.openCompExpand=openCompExpand;
+window.openEventModal=openEventModal;
+window.renderList=renderList;
+window.saveEdit=saveEdit;
+window.saveEvent=saveEvent;
+window.saveLessonEdit=saveLessonEdit;
+window.selectStudent=selectStudent;
+window.setLang=setLang;
+window.setTheme=setTheme;
+window.showNewLessonForm=showNewLessonForm;
+window.startEdit=startEdit;
+window.startLessonEdit=startLessonEdit;
+window.switchTab=switchTab;
+window.toggleLesson=toggleLesson;
+window.toggleThemePanel=toggleThemePanel;
+window.updateCompGoals=updateCompGoals;
+window.updateField=updateField;
+window.updateLessonField=updateLessonField;
+window.renderAttendance=renderAttendance;
+window.showAttForm=showAttForm;
+window.hideAttForm=hideAttForm;
+window.saveAbsence=saveAbsence;
+window.deleteAbsence=deleteAbsence;
+window.setAttReason=setAttReason;
+window.renderAttendance=renderAttendance;
+window.showAttForm=showAttForm;
+window.hideAttForm=hideAttForm;
+window.saveAbsence=saveAbsence;
+window.deleteAbsence=deleteAbsence;
+window.setAttType=setAttType;
+
+// ── ATTENDANCE ─────────────────────────────
+let attReasonIdx=0;
+
+function renderAttendance(){
+  const s=getStudent();if(!s)return;
+  const x=t();
+  const absences=(s.absences||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const months=lang==='de'?MONTHS_DE:MONTHS_ES;
+  const thisYear=new Date().getFullYear();
+  const yearAbs=absences.filter(a=>(a.date||'').startsWith(String(thisYear))).length;
+  let totalLessons=0;
+  if(s.startDate){
+    const weeks=Math.floor((new Date()-new Date(s.startDate))/(7*24*60*60*1000));
+    totalLessons=Math.max(weeks,0);
+  }
+  const pct=totalLessons>0?Math.round((absences.length/totalLessons)*100):0;
+
+  const dayBanner=s.day?`<div class="att-day-banner">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    ${lang==='de'?'Unterrichtstag':'Día de clase'}: <strong>${esc(s.day)}</strong>
+  </div>`:'';
+
+  let html=`<div class="card">
+    <div class="card-title">${x.attTitle}</div>
+    ${dayBanner}
+    <div class="att-stats-row">
+      <div class="att-stat-box">
+        <div class="att-stat-num red">${absences.length}</div>
+        <div class="att-stat-label">${lang==='de'?'Abwesenheiten':'Ausencias'}</div>
+      </div>
+      <div class="att-stat-box">
+        <div class="att-stat-num">${yearAbs}</div>
+        <div class="att-stat-label">${thisYear}</div>
+      </div>
+      <div class="att-stat-box">
+        <div class="att-stat-num ${pct>20?'red':'green'}">${totalLessons>0?pct+'%':'—'}</div>
+        <div class="att-stat-label">${lang==='de'?'Fehlquote':'% faltas'}</div>
+      </div>
+    </div>
+    <div class="att-top-bar">
+      <span class="lesson-count-label">${absences.length} ${lang==='de'?'Einträge':'registros'}</span>
+      <button class="att-add-btn" onclick="showAttForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        ${x.attAdd}
+      </button>
+    </div>
+    <div id="att-form-container"></div>`;
+
+  if(absences.length===0){
+    html+=`<div style="text-align:center;padding:32px 20px;color:var(--ink3)">
+      <div style="font-size:36px;margin-bottom:10px">✅</div>
+      <div style="font-family:'Georgia',serif;font-size:18px;color:var(--ink);margin-bottom:4px">${x.noAbsences}</div>
+    </div>`;
+  } else {
+    absences.forEach(a=>{
+      const [y,m,d]=(a.date||'---').split('-');
+      const mon=(months[parseInt(m)-1]||'').slice(0,3);
+      html+=`<div class="absence-card">
+        <div class="absence-date-badge">
+          <div class="abd-day">${d||'?'}</div>
+          <div class="abd-mon">${mon}</div>
+        </div>
+        <div class="absence-info">
+          <div class="absence-reason-badge">${esc(a.reason||'')}</div>
+          ${a.notes?`<div class="absence-notes-text">${esc(a.notes)}</div>`:''}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn-icon danger" onclick="deleteAbsence('${a.id}')">${svgTrash()}</button>
+        </div>
+      </div>`;
+    });
+  }
+  html+=`</div>`;
+  document.getElementById('panel-attendance').innerHTML=html;
+}
+
+function showAttForm(){
+  attReasonIdx=0;
+  const x=t();
+  const today=new Date().toISOString().slice(0,10);
+  const s=getStudent();
+  const reasonBtns=(x.attReasons||[]).map((r,i)=>
+    `<button class="att-reason-btn${i===0?' active':''}" onclick="setAttReason(${i})">${r}</button>`
+  ).join('');
+  const container=document.getElementById('att-form-container');
+  if(!container)return;
+  container.innerHTML=`<div class="att-form-card">
+    <div class="att-form-title">${x.attAdd}</div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">${x.attDate}</label>
+      <input class="form-input" type="date" id="att-date" value="${today}" style="max-width:200px">
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">${x.attReason}</label>
+      <div class="att-reason-row" id="att-reason-row">${reasonBtns}</div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">${x.attNotes}</label>
+      <input class="form-input" type="text" id="att-notes" placeholder="…">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-save" style="background:#c0392b" onclick="saveAbsence()">${x.save}</button>
+      <button class="btn-cancel" onclick="hideAttForm()">${x.cancel}</button>
+    </div>
+  </div>`;
+  container.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function hideAttForm(){
+  const c=document.getElementById('att-form-container');
+  if(c)c.innerHTML='';
+}
+
+function setAttReason(i){
+  attReasonIdx=i;
+  document.querySelectorAll('.att-reason-btn').forEach((b,idx)=>b.classList.toggle('active',idx===i));
+}
+
+function saveAbsence(){
+  const s=getStudent();if(!s)return;
+  const x=t();
+  const date=document.getElementById('att-date')?.value;
+  const notes=document.getElementById('att-notes')?.value||'';
+  if(!date){alert(lang==='de'?'Bitte Datum angeben':'Ingresa una fecha');return;}
+  const reason=(x.attReasons||[])[attReasonIdx]||'';
+  s.absences=s.absences||[];
+  s.absences.push({id:uid(),date,reason,notes});
+  persist();
+  hideAttForm();
+  renderAttendance();
+}
+
+function deleteAbsence(id){
+  const s=getStudent();if(!s)return;
+  showModal(t().confirmDel,'',()=>{
+    s.absences=(s.absences||[]).filter(a=>a.id!==id);
+    persist();hideModal();renderAttendance();
+  });
+}
+
+
+// ── BOOT ──────────────────────────────────────
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() { load(); renderAll(); });
+} else {
+  load(); renderAll();
+}
+
+</script>
+</body>
+</html>
