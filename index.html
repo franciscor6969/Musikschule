@@ -677,7 +677,7 @@ function tabIcon(k){
 function switchTab(k){
   activeTab=k;
   ['info','lessons','comp','rep','cal','att'].forEach(tab=>{
-    const pid=`panel-${tab==='comp'?'competences':tab==='rep'?'repertoire':tab}`;
+    const pid=`panel-${tab==='comp'?'competences':tab==='rep'?'repertoire':tab==='cal'?'calendar':tab==='att'?'attendance':tab}`;
     document.getElementById(pid).classList.toggle('hidden',tab!==k);
   });
   document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['info','lessons','comp','rep','cal','att'][i]===k));
