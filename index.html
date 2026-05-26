@@ -381,7 +381,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
     </div>
     <div class="header-controls">
       <button class="theme-btn" onclick="toggleThemePanel()">🎨 <span id="theme-label">Tema</span></button>
-      <div class="lang-toggle">
+      <span id="save-ind" style="color:var(--green);font-size:13px;font-weight:600;margin-right:8px"></span><div class="lang-toggle">
         <button class="lang-btn active" onclick="setLang('de')">DE</button>
         <button class="lang-btn" onclick="setLang('es')">ES</button>
       </div>
@@ -517,7 +517,16 @@ const uid=()=>Math.random().toString(36).slice(2,10);
 const SKEY='musikschule-v3';
 
 function load(){
-  try{students=JSON.parse(localStorage.getItem(SKEY))||[];}catch{students=[];}
+  try{
+    const primary=localStorage.getItem(SKEY);
+    const backup=localStorage.getItem(SKEY+'_backup');
+    const raw=primary||backup||'[]';
+    students=JSON.parse(raw)||[];
+    console.log('Loaded',students.length,'students from localStorage');
+  }catch(e){
+    console.error('Load failed:',e);
+    students=[];
+  }
   try{
     const saved=localStorage.getItem('msk-theme')||'blue';
     setTheme(saved,true);
@@ -525,7 +534,17 @@ function load(){
     if(sl!==lang){lang=sl;document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&sl==='de')||(i===1&&sl==='es')));}
   }catch{}
 }
-function persist(){try{localStorage.setItem(SKEY,JSON.stringify(students));}catch{}}
+function persist(){
+  try{
+    const data=JSON.stringify(students);
+    localStorage.setItem(SKEY,data);
+    try{sessionStorage.setItem(SKEY,data);}catch{}
+    const ind=document.getElementById('save-ind');
+    if(ind){ind.textContent='✓ Gespeichert';ind.style.color='var(--green)';setTimeout(()=>{ind.textContent='';},2000);}
+  }catch(e){
+    alert('Fehler beim Speichern / Error al guardar: '+e.message);
+  }
+}
 
 function emptyStudent(){
   return{id:uid(),name:'',address:'',phone:'',mobile:'',email:'',
@@ -1339,11 +1358,13 @@ function showAttForm(){
   const x=t();
   const today=new Date().toISOString().slice(0,10);
   const s=getStudent();
+  // Make sure panel is rendered first
+  let container=document.getElementById('att-form-container');
+  if(!container){renderAttendance();container=document.getElementById('att-form-container');}
+  if(!container)return;
   const reasonBtns=(x.attReasons||[]).map((r,i)=>
     `<button class="att-reason-btn${i===0?' active':''}" onclick="setAttReason(${i})">${r}</button>`
   ).join('');
-  const container=document.getElementById('att-form-container');
-  if(!container)return;
   container.innerHTML=`<div class="att-form-card">
     <div class="att-form-title">${x.attAdd}</div>
     <div class="form-group" style="margin-bottom:12px">
