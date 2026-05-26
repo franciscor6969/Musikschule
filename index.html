@@ -613,11 +613,16 @@ function renderList(){
 
 // ── STUDENT CRUD ──────────────────────────────
 function selectStudent(id){selectedId=id;editing=false;draft=null;activeTab='info';expandedLessonId=null;editingLessonId=null;renderAll();}
-function newStudent(){draft=emptyStudent();selectedId=draft.id;editing=true;activeTab='info';renderAll();}
+function newStudent(){
+  draft=emptyStudent();
+  students.push(draft);
+  persist();
+  selectedId=draft.id;editing=true;activeTab='info';renderAll();
+}
 function startEdit(){draft=JSON.parse(JSON.stringify(students.find(x=>x.id===selectedId)));editing=true;renderAll();}
 function saveEdit(){
   const idx=students.findIndex(s=>s.id===draft.id);
-  if(idx>=0)students[idx]=draft;else students.push(draft);
+  if(idx>=0)students[idx]=draft;
   persist();selectedId=draft.id;editing=false;draft=null;renderAll();
 }
 function cancelEdit(){
@@ -701,7 +706,12 @@ function updateField(field,val){
   const s=getStudent();if(!s)return;
   if(field.includes('.')){const[f,i]=field.split('.');s[f]=s[f]||[];s[f][parseInt(i)]=val;}
   else s[field]=val;
-  if(!editing)persist();
+  // Always save immediately to students array
+  if(editing&&draft){
+    const idx=students.findIndex(x=>x.id===draft.id);
+    if(idx>=0)students[idx]=draft;else students.push(draft);
+  }
+  persist();
 }
 function listBlock(field,items,title){
   const rows=(items||[]).map((v,i)=>`
