@@ -714,8 +714,8 @@ function listBlock(field,items,title){
   const add=editing?`<button class="list-add" onclick="listAdd('${field}')">+ ${t().addItem}</button>`:'';
   return`<div class="card"><div class="card-title">${title}</div><div class="list-inputs">${rows}${add}</div></div>`;
 }
-function listAdd(f){const s=getStudent();if(!s)return;s[f]=[...(s[f]||[]),''];renderPanel();}
-function listDel(f,idx){const s=getStudent();if(!s)return;s[f]=(s[f]||[]).filter((_,i)=>i!==idx);renderPanel();}
+function listAdd(f){const s=getStudent();if(!s)return;s[f]=[...(s[f]||[]),''];if(!editing)persist();renderPanel();}
+function listDel(f,idx){const s=getStudent();if(!s)return;s[f]=(s[f]||[]).filter((_,i)=>i!==idx);if(!editing)persist();renderPanel();}
 
 // ── TAB: INFO ─────────────────────────────────
 function renderInfo(){
@@ -985,16 +985,14 @@ function renderRepertoire(){
     html+=`<div class="card"><div class="card-title">${label}</div><ul class="rep-list">`;
     items.forEach((item,i)=>{
       html+=`<li class="rep-item"><span class="rep-num">${i+1}.</span>`;
-      if(editing){
-        html+=`<input class="rep-input" value="${esc(item)}" onchange="updateField('${field}.${i}',this.value)" oninput="updateField('${field}.${i}',this.value)">
-          <button class="rep-del" onclick="listDel('${field}',${i})">${svgTrash()}</button>`;
-      } else {
-        html+=`<span class="rep-text">${esc(item)||'<span style="color:var(--border)">—</span>'}</span>`;
-      }
+      html+=`<input class="rep-input" value="${esc(item)}"
+        onchange="repUpdate('${field}',${i},this.value)"
+        oninput="repUpdate('${field}',${i},this.value)">
+        <button class="rep-del" onclick="repDel('${field}',${i})">${svgTrash()}</button>`;
       html+=`</li>`;
     });
     html+=`</ul>`;
-    if(editing) html+=`<button class="rep-add" onclick="listAdd('${field}')">+ ${x.addItem}</button>`;
+    html+=`<button class="rep-add" onclick="repAdd('${field}')">+ ${x.addItem}</button>`;
     html+=`</div>`;
   });
   html+=`</div>`;
@@ -1232,12 +1230,18 @@ window.updateCompGoals=updateCompGoals;
 window.updateField=updateField;
 window.updateLessonField=updateLessonField;
 window.renderAttendance=renderAttendance;
+window.repUpdate=repUpdate;
+window.repAdd=repAdd;
+window.repDel=repDel;
 window.showAttForm=showAttForm;
 window.hideAttForm=hideAttForm;
 window.saveAbsence=saveAbsence;
 window.deleteAbsence=deleteAbsence;
 window.setAttReason=setAttReason;
 window.renderAttendance=renderAttendance;
+window.repUpdate=repUpdate;
+window.repAdd=repAdd;
+window.repDel=repDel;
 window.showAttForm=showAttForm;
 window.hideAttForm=hideAttForm;
 window.saveAbsence=saveAbsence;
@@ -1384,6 +1388,26 @@ function deleteAbsence(id){
   });
 }
 
+
+
+function repUpdate(field,i,val){
+  const s=getStudent();if(!s)return;
+  s[field]=s[field]||[];
+  s[field][i]=val;
+  persist();
+}
+function repAdd(field){
+  const s=getStudent();if(!s)return;
+  s[field]=[...(s[field]||[]),''];
+  persist();
+  renderRepertoire();
+}
+function repDel(field,i){
+  const s=getStudent();if(!s)return;
+  s[field]=(s[field]||[]).filter((_,j)=>j!==i);
+  persist();
+  renderRepertoire();
+}
 
 // ── BOOT ──────────────────────────────────────
 if (document.readyState === 'loading') {
