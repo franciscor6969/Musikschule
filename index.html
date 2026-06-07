@@ -381,7 +381,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
     </div>
     <div class="header-controls">
       <button class="theme-btn" onclick="toggleThemePanel()">🎨 <span id="theme-label">Tema</span></button>
-      <span id="save-ind" style="color:var(--green);font-size:13px;font-weight:600;margin-right:8px"></span><div class="lang-toggle">
+      <div class="lang-toggle">
         <button class="lang-btn active" onclick="setLang('de')">DE</button>
         <button class="lang-btn" onclick="setLang('es')">ES</button>
       </div>
@@ -517,16 +517,7 @@ const uid=()=>Math.random().toString(36).slice(2,10);
 const SKEY='musikschule-v3';
 
 function load(){
-  try{
-    const primary=localStorage.getItem(SKEY);
-    const backup=localStorage.getItem(SKEY+'_backup');
-    const raw=primary||backup||'[]';
-    students=JSON.parse(raw)||[];
-    console.log('Loaded',students.length,'students from localStorage');
-  }catch(e){
-    console.error('Load failed:',e);
-    students=[];
-  }
+  try{students=JSON.parse(localStorage.getItem(SKEY))||[];}catch{students=[];}
   try{
     const saved=localStorage.getItem('msk-theme')||'blue';
     setTheme(saved,true);
@@ -534,17 +525,7 @@ function load(){
     if(sl!==lang){lang=sl;document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&sl==='de')||(i===1&&sl==='es')));}
   }catch{}
 }
-function persist(){
-  try{
-    const data=JSON.stringify(students);
-    localStorage.setItem(SKEY,data);
-    try{sessionStorage.setItem(SKEY,data);}catch{}
-    const ind=document.getElementById('save-ind');
-    if(ind){ind.textContent='✓ Gespeichert';ind.style.color='var(--green)';setTimeout(()=>{ind.textContent='';},2000);}
-  }catch(e){
-    alert('Fehler beim Speichern / Error al guardar: '+e.message);
-  }
-}
+function persist(){try{localStorage.setItem(SKEY,JSON.stringify(students));}catch{}}
 
 function emptyStudent(){
   return{id:uid(),name:'',address:'',phone:'',mobile:'',email:'',
@@ -632,16 +613,11 @@ function renderList(){
 
 // ── STUDENT CRUD ──────────────────────────────
 function selectStudent(id){selectedId=id;editing=false;draft=null;activeTab='info';expandedLessonId=null;editingLessonId=null;renderAll();}
-function newStudent(){
-  draft=emptyStudent();
-  students.push(draft);
-  persist();
-  selectedId=draft.id;editing=true;activeTab='info';renderAll();
-}
+function newStudent(){draft=emptyStudent();selectedId=draft.id;editing=true;activeTab='info';renderAll();}
 function startEdit(){draft=JSON.parse(JSON.stringify(students.find(x=>x.id===selectedId)));editing=true;renderAll();}
 function saveEdit(){
   const idx=students.findIndex(s=>s.id===draft.id);
-  if(idx>=0)students[idx]=draft;
+  if(idx>=0)students[idx]=draft;else students.push(draft);
   persist();selectedId=draft.id;editing=false;draft=null;renderAll();
 }
 function cancelEdit(){
@@ -718,17 +694,17 @@ function renderPanel(){
 
 // ── FIELD HELPERS ─────────────────────────────
 function inp(field,val,type='text'){
-  const ro=!editing?'readonly':'';
-  return`<input class="form-input" type="${type}" value="${esc(val||'')}" ${ro} onchange="updateField('${field}',this.value)" oninput="updateField('${field}',this.value)">`;
+  return`<input class="form-input" type="${type}" value="${esc(val||'')}" onchange="updateField('${field}',this.value)" oninput="updateField('${field}',this.value)">`;
 }
 function updateField(field,val){
   const s=getStudent();if(!s)return;
   if(field.includes('.')){const[f,i]=field.split('.');s[f]=s[f]||[];s[f][parseInt(i)]=val;}
   else s[field]=val;
-  // Always save immediately to students array
+  // Always save to students array immediately
   if(editing&&draft){
     const idx=students.findIndex(x=>x.id===draft.id);
-    if(idx>=0)students[idx]=draft;else students.push(draft);
+    if(idx>=0)students[idx]=draft;
+    else students.push(draft);
   }
   persist();
 }
@@ -743,8 +719,8 @@ function listBlock(field,items,title){
   const add=editing?`<button class="list-add" onclick="listAdd('${field}')">+ ${t().addItem}</button>`:'';
   return`<div class="card"><div class="card-title">${title}</div><div class="list-inputs">${rows}${add}</div></div>`;
 }
-function listAdd(f){const s=getStudent();if(!s)return;s[f]=[...(s[f]||[]),''];if(!editing)persist();renderPanel();}
-function listDel(f,idx){const s=getStudent();if(!s)return;s[f]=(s[f]||[]).filter((_,i)=>i!==idx);if(!editing)persist();renderPanel();}
+function listAdd(f){const s=getStudent();if(!s)return;s[f]=[...(s[f]||[]),''];renderPanel();}
+function listDel(f,idx){const s=getStudent();if(!s)return;s[f]=(s[f]||[]).filter((_,i)=>i!==idx);renderPanel();}
 
 // ── TAB: INFO ─────────────────────────────────
 function renderInfo(){
@@ -1014,14 +990,16 @@ function renderRepertoire(){
     html+=`<div class="card"><div class="card-title">${label}</div><ul class="rep-list">`;
     items.forEach((item,i)=>{
       html+=`<li class="rep-item"><span class="rep-num">${i+1}.</span>`;
-      html+=`<input class="rep-input" value="${esc(item)}"
-        onchange="repUpdate('${field}',${i},this.value)"
-        oninput="repUpdate('${field}',${i},this.value)">
-        <button class="rep-del" onclick="repDel('${field}',${i})">${svgTrash()}</button>`;
+      if(editing){
+        html+=`<input class="rep-input" value="${esc(item)}" onchange="updateField('${field}.${i}',this.value)" oninput="updateField('${field}.${i}',this.value)">
+          <button class="rep-del" onclick="listDel('${field}',${i})">${svgTrash()}</button>`;
+      } else {
+        html+=`<span class="rep-text">${esc(item)||'<span style="color:var(--border)">—</span>'}</span>`;
+      }
       html+=`</li>`;
     });
     html+=`</ul>`;
-    html+=`<button class="rep-add" onclick="repAdd('${field}')">+ ${x.addItem}</button>`;
+    if(editing) html+=`<button class="rep-add" onclick="listAdd('${field}')">+ ${x.addItem}</button>`;
     html+=`</div>`;
   });
   html+=`</div>`;
@@ -1259,18 +1237,12 @@ window.updateCompGoals=updateCompGoals;
 window.updateField=updateField;
 window.updateLessonField=updateLessonField;
 window.renderAttendance=renderAttendance;
-window.repUpdate=repUpdate;
-window.repAdd=repAdd;
-window.repDel=repDel;
 window.showAttForm=showAttForm;
 window.hideAttForm=hideAttForm;
 window.saveAbsence=saveAbsence;
 window.deleteAbsence=deleteAbsence;
 window.setAttReason=setAttReason;
 window.renderAttendance=renderAttendance;
-window.repUpdate=repUpdate;
-window.repAdd=repAdd;
-window.repDel=repDel;
 window.showAttForm=showAttForm;
 window.hideAttForm=hideAttForm;
 window.saveAbsence=saveAbsence;
@@ -1358,9 +1330,9 @@ function showAttForm(){
   const x=t();
   const today=new Date().toISOString().slice(0,10);
   const s=getStudent();
-  // Make sure panel is rendered first
-  let container=document.getElementById('att-form-container');
-  if(!container){renderAttendance();container=document.getElementById('att-form-container');}
+  if(!s)return;
+  renderAttendance();
+  const container=document.getElementById('att-form-container');
   if(!container)return;
   const reasonBtns=(x.attReasons||[]).map((r,i)=>
     `<button class="att-reason-btn${i===0?' active':''}" onclick="setAttReason(${i})">${r}</button>`
@@ -1386,7 +1358,6 @@ function showAttForm(){
   </div>`;
   container.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-
 function hideAttForm(){
   const c=document.getElementById('att-form-container');
   if(c)c.innerHTML='';
@@ -1400,14 +1371,21 @@ function setAttReason(i){
 function saveAbsence(){
   const s=getStudent();if(!s)return;
   const x=t();
-  const date=document.getElementById('att-date')?.value;
-  const notes=document.getElementById('att-notes')?.value||'';
+  const dateEl=document.getElementById('att-date');
+  const notesEl=document.getElementById('att-notes');
+  const date=dateEl?dateEl.value:'';
+  const notes=notesEl?notesEl.value:'';
   if(!date){alert(lang==='de'?'Bitte Datum angeben':'Ingresa una fecha');return;}
   const reason=(x.attReasons||[])[attReasonIdx]||'';
-  s.absences=s.absences||[];
+  if(!s.absences)s.absences=[];
   s.absences.push({id:uid(),date,reason,notes});
+  // Save to students array immediately
+  if(editing&&draft){
+    const idx=students.findIndex(x=>x.id===draft.id);
+    if(idx>=0)students[idx]=draft;
+    else students.push(draft);
+  }
   persist();
-  hideAttForm();
   renderAttendance();
 }
 
@@ -1419,26 +1397,6 @@ function deleteAbsence(id){
   });
 }
 
-
-
-function repUpdate(field,i,val){
-  const s=getStudent();if(!s)return;
-  s[field]=s[field]||[];
-  s[field][i]=val;
-  persist();
-}
-function repAdd(field){
-  const s=getStudent();if(!s)return;
-  s[field]=[...(s[field]||[]),''];
-  persist();
-  renderRepertoire();
-}
-function repDel(field,i){
-  const s=getStudent();if(!s)return;
-  s[field]=(s[field]||[]).filter((_,j)=>j!==i);
-  persist();
-  renderRepertoire();
-}
 
 // ── BOOT ──────────────────────────────────────
 if (document.readyState === 'loading') {
