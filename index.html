@@ -364,6 +364,21 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
   .sidebar{width:100%;min-width:0;height:auto;max-height:38vh}
 }
 </style>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcdKZPO5vfHtdUUCCCx5MRM7KF5_ucDrs",
+      authDomain: "musikschule-de42b.firebaseapp.com",
+      projectId: "musikschule-de42b",
+      storageBucket: "musikschule-de42b.firebasestorage.app",
+      messagingSenderId: "80316949292",
+      appId: "1:80316949292:web:8c904e1eba55fbde408289"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
 <div id="app">
@@ -517,16 +532,42 @@ const uid=()=>Math.random().toString(36).slice(2,10);
 const SKEY='musikschule-v3';
 
 function load(){
-  try{students=JSON.parse(localStorage.getItem(SKEY))||[];}catch{students=[];}
-  try{
-    const saved=localStorage.getItem('msk-theme')||'blue';
-    setTheme(saved,true);
-    const sl=localStorage.getItem('msk-lang')||'de';
-    if(sl!==lang){lang=sl;document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&sl==='de')||(i===1&&sl==='es')));}
-  }catch{}
+  if(typeof db !== 'undefined'){
+    db.collection('musikschule').doc('students').get()
+      .then(doc=>{
+        if(doc.exists){
+          try{students=JSON.parse(doc.data().data)||[];}catch{students=[];}
+        } else {
+          try{students=JSON.parse(localStorage.getItem(SKEY))||[];}catch{students=[];}
+        }
+        try{const saved=localStorage.getItem('msk-theme')||'blue';setTheme(saved,true);}catch{}
+        renderAll();
+      })
+      .catch(()=>{
+        try{students=JSON.parse(localStorage.getItem(SKEY))||[];}catch{students=[];}
+        try{const saved=localStorage.getItem('msk-theme')||'blue';setTheme(saved,true);}catch{}
+        renderAll();
+      });
+  } else {
+    try{students=JSON.parse(localStorage.getItem(SKEY))||[];}catch{students=[];}
+    try{const saved=localStorage.getItem('msk-theme')||'blue';setTheme(saved,true);}catch{}
+    renderAll();
+  }
 }
-function persist(){try{localStorage.setItem(SKEY,JSON.stringify(students));}catch{}}
-
+function persist(){
+  try{localStorage.setItem(SKEY,JSON.stringify(students));}catch{}
+  if(typeof db !== 'undefined'){
+    db.collection('musikschule').doc('students').set({data:JSON.stringify(students)})
+      .then(()=>{
+        const ind=document.getElementById('save-ind');
+        if(ind){ind.textContent='✓ Gespeichert';ind.style.color='var(--green)';setTimeout(()=>{ind.textContent='';},2000);}
+      })
+      .catch(e=>{
+        const ind=document.getElementById('save-ind');
+        if(ind){ind.textContent='⚠ Offline-Modus';ind.style.color='#e67e22';setTimeout(()=>{ind.textContent='';},3000);}
+      });
+  }
+}
 function emptyStudent(){
   return{id:uid(),name:'',address:'',phone:'',mobile:'',email:'',
     birthdate:'',startDate:'',semester:'',day:'',
@@ -694,19 +735,14 @@ function renderPanel(){
 
 // ── FIELD HELPERS ─────────────────────────────
 function inp(field,val,type='text'){
-  return`<input class="form-input" type="${type}" value="${esc(val||'')}" onchange="updateField('${field}',this.value)" oninput="updateField('${field}',this.value)">`;
+  const ro=!editing?'readonly':'';
+  return`<input class="form-input" type="${type}" value="${esc(val||'')}" ${ro} onchange="updateField('${field}',this.value)" oninput="updateField('${field}',this.value)">`;
 }
 function updateField(field,val){
   const s=getStudent();if(!s)return;
   if(field.includes('.')){const[f,i]=field.split('.');s[f]=s[f]||[];s[f][parseInt(i)]=val;}
   else s[field]=val;
-  // Always save to students array immediately
-  if(editing&&draft){
-    const idx=students.findIndex(x=>x.id===draft.id);
-    if(idx>=0)students[idx]=draft;
-    else students.push(draft);
-  }
-  persist();
+  if(!editing)persist();
 }
 function listBlock(field,items,title){
   const rows=(items||[]).map((v,i)=>`
@@ -1330,13 +1366,11 @@ function showAttForm(){
   const x=t();
   const today=new Date().toISOString().slice(0,10);
   const s=getStudent();
-  if(!s)return;
-  renderAttendance();
-  const container=document.getElementById('att-form-container');
-  if(!container)return;
   const reasonBtns=(x.attReasons||[]).map((r,i)=>
     `<button class="att-reason-btn${i===0?' active':''}" onclick="setAttReason(${i})">${r}</button>`
   ).join('');
+  const container=document.getElementById('att-form-container');
+  if(!container)return;
   container.innerHTML=`<div class="att-form-card">
     <div class="att-form-title">${x.attAdd}</div>
     <div class="form-group" style="margin-bottom:12px">
@@ -1358,6 +1392,7 @@ function showAttForm(){
   </div>`;
   container.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+
 function hideAttForm(){
   const c=document.getElementById('att-form-container');
   if(c)c.innerHTML='';
@@ -1371,21 +1406,14 @@ function setAttReason(i){
 function saveAbsence(){
   const s=getStudent();if(!s)return;
   const x=t();
-  const dateEl=document.getElementById('att-date');
-  const notesEl=document.getElementById('att-notes');
-  const date=dateEl?dateEl.value:'';
-  const notes=notesEl?notesEl.value:'';
+  const date=document.getElementById('att-date')?.value;
+  const notes=document.getElementById('att-notes')?.value||'';
   if(!date){alert(lang==='de'?'Bitte Datum angeben':'Ingresa una fecha');return;}
   const reason=(x.attReasons||[])[attReasonIdx]||'';
-  if(!s.absences)s.absences=[];
+  s.absences=s.absences||[];
   s.absences.push({id:uid(),date,reason,notes});
-  // Save to students array immediately
-  if(editing&&draft){
-    const idx=students.findIndex(x=>x.id===draft.id);
-    if(idx>=0)students[idx]=draft;
-    else students.push(draft);
-  }
   persist();
+  hideAttForm();
   renderAttendance();
 }
 
